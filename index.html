@@ -2078,7 +2078,7 @@ document.querySelectorAll('.stepper button').forEach(b => {
 /* ─── submit ─── */
 const form = document.getElementById('rsvpForm');
 const successView = document.getElementById('successView');
-fform.addEventListener('submit', async (ev) => {
+form.addEventListener('submit', async (ev) => {
   ev.preventDefault();
 
   if (!form.checkValidity()) {
