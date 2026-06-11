@@ -1938,14 +1938,14 @@ greatest honour.</p>
 
           <div class="attend-cards" role="radiogroup" aria-label="Attendance">
             <label class="attend-opt accept">
-              <input type="radio" name="attend" value="yes" required />
+              <input type="radio" name="attend" value="Attending" required />
               <span class="attend-opt-face" style="background-color: rgba(91, 42, 195, 0)">
                 <span data-i18n="en" style="font-family: &quot;Cormorant Garamond&quot;; color: rgb(160, 125, 54); font-weight: 500">HAPPILY ATTENDING</span>
                 <span data-i18n="zh" style="color: rgb(160, 125, 54)">欣然出席</span>
               </span>
             </label>
             <label class="attend-opt decline">
-              <input type="radio" name="attend" value="no" />
+              <input type="radio" name="attend" value="Declining" />
               <span class="attend-opt-face">
                 <span data-i18n="en" style="color: rgb(160, 125, 54); font-family: &quot;Cormorant Garamond&quot;; font-weight: 500">Regretfully Declining</span>
                 <span data-i18n="zh" style="color: rgb(160, 125, 54)">未能出席</span>
@@ -2047,8 +2047,21 @@ document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 const attendInputs = document.querySelectorAll('input[name="attend"]');
 const attendingDetails = document.getElementById('attendingDetails');
 const gc = document.getElementById('guestCount');
+
 attendInputs.forEach(i => i.addEventListener('change', () => {
-  attendingDetails.classList.toggle('is-open', document.querySelector('input[name="attend"]:checked')?.value === 'yes');
+  const selected = document.querySelector('input[name="attend"]:checked')?.value;
+
+  if (selected === 'Attending') {
+    attendingDetails.classList.add('is-open');
+    gc.value = gc.value === '0' ? '1' : gc.value;
+    gc.min = '1';
+  }
+
+  if (selected === 'Declining') {
+    attendingDetails.classList.remove('is-open');
+    gc.value = '0';
+    gc.min = '0';
+  }
 }));
 
 /* ─── stepper ─── */
@@ -2065,19 +2078,32 @@ document.querySelectorAll('.stepper button').forEach(b => {
 /* ─── submit ─── */
 const form = document.getElementById('rsvpForm');
 const successView = document.getElementById('successView');
-form.addEventListener('submit', (ev) => {
+fform.addEventListener('submit', async (ev) => {
   ev.preventDefault();
-  if(!form.checkValidity()){
+
+  if (!form.checkValidity()) {
     form.reportValidity();
     return;
   }
-  form.style.transition = 'opacity .35s ease, transform .35s ease';
-  form.style.opacity = '0';
-  form.style.transform = 'translateY(-8px)';
-  setTimeout(() => {
-    form.style.display = 'none';
-    successView.classList.add('is-on');
-  }, 380);
+
+  const data = {
+    fullName: form.fullName.value,
+    phone: form.phone.value,
+    attend: form.attend.value,
+    guestCount: form.attend.value === 'Declining' ? 0 : form.guestCount.value
+  };
+
+  await fetch('https://script.google.com/macros/s/AKfycbzKIxFl-WJ6tqXU32cXw5HegoJdKutG5VL30J39J_G0cNNajDNlLF-3Nh59S3LlYqGX/exec', {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data)
+  });
+
+  form.style.display = 'none';
+  successView.classList.add('is-on');
 });
 
 
